@@ -21,7 +21,7 @@
 #include <zephyr/drivers/spi.h>
 #include <zephyr/logging/log.h>
 
-#include <le_capybara/drivers/misc/adxl362.h>
+#include <ec_support/drivers/misc/adxl362.h>
 
 #include "adxl362.h"
 

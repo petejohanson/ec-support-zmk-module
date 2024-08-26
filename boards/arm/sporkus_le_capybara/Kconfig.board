@@ -1,8 +1,0 @@
-# Le Chiffre (stm32) board configuration
-
-# Copyright (c) 2020 The ZMK Contributors
-# SPDX-License-Identifier: MIT
-
-config BOARD_SPORKUS_LE_CAPYBARA
-    bool "Le Capybara"
-    depends on SOC_STM32F072XB

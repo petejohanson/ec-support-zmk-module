@@ -1,8 +1,0 @@
-name: layout-36-keys
-boards:
-  lpgalaxy_le_zapybara:
-    append:
-      EXTRA_DTC_OVERLAY_FILE: lpgalaxy_le_zapybara.overlay
-  sporkus_le_capybara:
-    append:
-      EXTRA_DTC_OVERLAY_FILE: sporkus_le_capybara_layout_36_keys.overlay

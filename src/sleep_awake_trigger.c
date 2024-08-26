@@ -1,5 +1,5 @@
 
-#include <le_capybara/drivers/misc/adxl362.h>
+#include <ec_support/drivers/misc/adxl362.h>
 
 #include <zmk/event_manager.h>
 #include <zmk/events/activity_state_changed.h>
