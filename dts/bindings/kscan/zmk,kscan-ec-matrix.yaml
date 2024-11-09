@@ -8,6 +8,8 @@ compatible: "zmk,kscan-ec-matrix"
 include: [kscan.yaml, pinctrl-device.yaml]
 
 properties:
+  skip-startup-calibration:
+    type: boolean
   active-polling-interval-ms:
     type: int
     default: 1

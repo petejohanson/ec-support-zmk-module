@@ -30,6 +30,7 @@ struct kscan_ec_matrix_config {
     struct gpio_dt_spec power;
     struct gpio_dt_spec drain;
     const struct adc_dt_spec adc_channel;
+    const bool skip_startup_calibration;
     const uint8_t strobes_len;
     const uint8_t inputs_len;
     const uint16_t matrix_warm_up_us;
@@ -371,8 +372,9 @@ void calibrate(const struct device *dev) {
                     continue;
                 }
 
-                LOG_WRN("Getting high for %d/%d after %d is higher than threashold: %d", s, i,
-                        high_check_val, high_threshold);
+                LOG_WRN("Getting high for %d/%d after %d is higher than threashold: %d for "
+                        "resolution %d",
+                        s, i, high_check_val, high_threshold, cfg->adc_channel.resolution);
                 k_sleep(K_MSEC(200));
 
                 struct sample_results high_res = sample(dev, s, i);
@@ -707,19 +709,21 @@ static int kscan_ec_matrix_init(const struct device *dev) {
         return err;
     }
 
-    int16_t buf = 0;
-    struct adc_sequence sequence = {
-        .buffer = &buf,
-        .buffer_size = sizeof(buf),
-    };
+    if (!cfg->skip_startup_calibration) {
+        int16_t buf = 0;
+        struct adc_sequence sequence = {
+            .buffer = &buf,
+            .buffer_size = sizeof(buf),
+        };
 
-    adc_sequence_init_dt(&cfg->adc_channel, &sequence);
-    sequence.calibrate = true;
+        adc_sequence_init_dt(&cfg->adc_channel, &sequence);
+        sequence.calibrate = true;
 
-    err = adc_read(cfg->adc_channel.dev, &sequence);
-    if (err < 0) {
-        LOG_ERR("Failed to calibrate on startup: %d", err);
-        return err;
+        err = adc_read(cfg->adc_channel.dev, &sequence);
+        if (err < 0) {
+            LOG_ERR("Failed to calibrate on startup: %d", err);
+            return err;
+        }
     }
 
     if (cfg->pcfg) {
@@ -769,7 +773,7 @@ static int kscan_ec_matrix_init(const struct device *dev) {
     data->poll_interval = cfg->active_polling_interval_ms;
 
     k_mutex_lock(&data->mutex, K_MSEC(5));
-    
+
     k_thread_create(&data->thread, data->thread_stack, CONFIG_ZMK_KSCAN_EC_MATRIX_THREAD_STACK_SIZE,
                     kscan_ec_matrix_thread_main, (void *)dev, NULL, NULL,
                     K_PRIO_COOP(CONFIG_ZMK_KSCAN_EC_MATRIX_THREAD_PRIORITY), 0, K_NO_WAIT);
@@ -840,6 +844,7 @@ static int zkem_pm_action(const struct device *dev, enum pm_device_action action
         .matrix_relax_us = DT_INST_PROP_OR(n, matrix_relax_us, 0),                                 \
         .adc_read_settle_us = DT_INST_PROP_OR(n, adc_read_settle_us, 0),                           \
         .active_polling_interval_ms = DT_INST_PROP_OR(n, active_polling_interval_ms, 1),           \
+        .skip_startup_calibration = DT_INST_PROP_OR(n, skip_startup_calibration, false),           \
         COND_CODE_1(                                                                               \
             IS_ENABLED(CONFIG_ZMK_KSCAN_EC_MATRIX_DYNAMIC_POLL_RATE),                              \
             (.idle_polling_interval_ms = DT_INST_PROP_OR(n, idle_polling_interval_ms, 5),          \
