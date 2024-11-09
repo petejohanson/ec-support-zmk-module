@@ -19,6 +19,10 @@ config ZMK_KSCAN_EC_MATRIX_SETTINGS
 	default y
 	depends on SETTINGS
 
+config ZMK_KSCAN_EC_MATRIX_SETTINGS_DISCRETE
+	bool "Store individual calibration entries as disrete settings"
+	depends on ZMK_KSCAN_EC_MATRIX_SETTINGS
+
 config ZMK_KSCAN_EC_MATRIX_DYNAMIC_POLL_RATE
 	bool "Dynamic poll rate for power savings"
 
