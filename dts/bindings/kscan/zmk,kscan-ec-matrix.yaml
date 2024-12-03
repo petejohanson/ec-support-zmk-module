@@ -48,6 +48,12 @@ properties:
     type: phandle-array
   io-channels:
     required: true
+  precalib-avg-lows:
+    type: array
+    description: Pre-seeded avg low calibration values
+  precalib-avg-highs:
+    type: array
+    description: Pre-seeded avg high calibration values
   
   pinctrl-0:
     required: false

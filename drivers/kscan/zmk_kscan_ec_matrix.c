@@ -812,10 +812,18 @@ static int zkem_pm_action(const struct device *dev, enum pm_device_action action
 
 #define ENTRIES(n) DT_INST_PROP_LEN(n, strobe_gpios) * DT_INST_PROP_LEN(n, input_gpios)
 
+#define FOREACH_STROBE_CALIB_ENTRY(n, prop, idx)                                                   \
+    {.avg_low = DT_PROP_BY_IDX(n, precalib_avg_lows, idx),                                         \
+     .avg_high = DT_PROP_BY_IDX(n, precalib_avg_highs, idx)}
+
 #define ZKEM_INIT(n)                                                                               \
     PM_DEVICE_DT_INST_DEFINE(n, zkem_pm_action);                                                   \
     COND_CODE_1(DT_INST_NODE_HAS_PROP(n, pinctrl_names), (PINCTRL_DT_INST_DEFINE(n);), ())         \
-    static struct zmk_kscan_ec_matrix_calibration_entry calibration_entries_##n[ENTRIES(n)] = {0}; \
+    static struct zmk_kscan_ec_matrix_calibration_entry calibration_entries_##n[ENTRIES(n)] = {    \
+        COND_CODE_1(DT_INST_NODE_HAS_PROP(n, precalib_avg_lows),                                   \
+                    (DT_INST_FOREACH_PROP_ELEM_SEP(n, precalib_avg_lows,                           \
+                                                   FOREACH_STROBE_CALIB_ENTRY, (, ))),             \
+                    (0))};                                                                         \
     static uint64_t reported_matrix_states_##n[DT_INST_PROP_LEN(n, strobe_gpios)] = {0};           \
     COND_CODE_1(                                                                                   \
         DT_INST_NODE_HAS_PROP(n, strobe_input_masks),                                              \
