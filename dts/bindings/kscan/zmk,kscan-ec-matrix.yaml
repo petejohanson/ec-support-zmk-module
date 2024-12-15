@@ -8,6 +8,10 @@ compatible: "zmk,kscan-ec-matrix"
 include: [kscan.yaml, pinctrl-device.yaml]
 
 properties:
+  trigger-percentage:
+    type: int
+    default: 50
+    description: Pressed threshold as a percentage of the full range, where 0% is not pressed at all and 100% is pressed fully.
   skip-startup-calibration:
     type: boolean
   active-polling-interval-ms:

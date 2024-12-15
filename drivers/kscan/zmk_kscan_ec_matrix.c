@@ -33,6 +33,7 @@ struct kscan_ec_matrix_config {
     const bool skip_startup_calibration;
     const uint8_t strobes_len;
     const uint8_t inputs_len;
+    const uint8_t trigger_percentage;
     const uint16_t matrix_warm_up_us;
     const uint16_t matrix_relax_us;
     const uint16_t adc_read_settle_us;
@@ -497,9 +498,11 @@ static void kscan_ec_matrix_read(const struct device *dev) {
 
             buf = normalize(buf, calibration->avg_low, calibration->avg_high);
 
-            uint16_t range = calibration->avg_high - calibration->avg_low;
-            uint16_t press_limit_raw = calibration->avg_high - (range / 6);
-            uint16_t hys_buffer = (range / 3);
+            uint32_t range = calibration->avg_high - calibration->avg_low;
+            uint16_t press_limit_raw =
+                calibration->avg_high -
+                (uint16_t)(MAX((range * cfg->trigger_percentage) / 100, calibration->noise));
+            uint16_t hys_buffer = MAX(range / 8, calibration->noise);
             uint16_t press_limit =
                 normalize(press_limit_raw, calibration->avg_low, calibration->avg_high);
             uint16_t release_limit = normalize(press_limit_raw - hys_buffer, calibration->avg_low,
@@ -836,6 +839,9 @@ static int zkem_pm_action(const struct device *dev, enum pm_device_action action
     };                                                                                             \
     static const struct gpio_dt_spec inputs_##n[] = {                                              \
         DT_FOREACH_PROP_ELEM(DT_DRV_INST(n), input_gpios, ZKEM_GPIO_DT_SPEC_ELEM)};                \
+    BUILD_ASSERT(DT_INST_PROP(n, trigger_percentage) > 10 &&                                       \
+                     DT_INST_PROP(n, trigger_percentage) < 90,                                     \
+                 "trigger-percentage must be between 10 and 95");                                  \
     static const struct kscan_ec_matrix_config kscan_ec_matrix_config##n = {                       \
         COND_CODE_1(DT_INST_NODE_HAS_PROP(n, pinctrl_names),                                       \
                     (.pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(n), ), ())                             \
@@ -853,6 +859,7 @@ static int zkem_pm_action(const struct device *dev, enum pm_device_action action
         .adc_read_settle_us = DT_INST_PROP_OR(n, adc_read_settle_us, 0),                           \
         .active_polling_interval_ms = DT_INST_PROP_OR(n, active_polling_interval_ms, 1),           \
         .skip_startup_calibration = DT_INST_PROP_OR(n, skip_startup_calibration, false),           \
+        .trigger_percentage = DT_INST_PROP_OR(n, trigger_percentage, 50),                          \
         COND_CODE_1(                                                                               \
             IS_ENABLED(CONFIG_ZMK_KSCAN_EC_MATRIX_DYNAMIC_POLL_RATE),                              \
             (.idle_polling_interval_ms = DT_INST_PROP_OR(n, idle_polling_interval_ms, 5),          \
