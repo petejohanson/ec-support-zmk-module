@@ -26,17 +26,6 @@ properties:
   "#gpio-cells":
     const: 2
 
-  ngpios:
-    type: int
-    required: true
-    enum:
-      - 2
-      - 4
-      - 8
-      - 16
-      - 32
-    description: Number of gpios supported
-
 gpio-cells:
   - pin
   - flags
