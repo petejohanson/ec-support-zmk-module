@@ -14,8 +14,6 @@ struct zgm_config {
     /* gpio_driver_data needs to be first */
     struct gpio_driver_config common;
 
-    uint8_t ngpios;
-
     struct gpio_dt_spec en_gpio;
     struct gpio_dt_spec out_gpio;
     uint8_t sel_gpios_len;
@@ -98,7 +96,7 @@ static int zgm_init(const struct device *dev) {
 #define GPIO_PORT_PIN_MASK_FROM_NGPIOS(ngpios) ((gpio_port_pins_t)(((uint64_t)1 << (ngpios)) - 1U))
 
 #define GPIO_PORT_PIN_MASK_FROM_DT_INST(inst)                                                      \
-    GPIO_PORT_PIN_MASK_FROM_NGPIOS(DT_INST_PROP(inst, ngpios))
+    GPIO_PORT_PIN_MASK_FROM_NGPIOS((1 << DT_INST_PROP_LEN(inst, select_gpios)))
 
 #define ZGM_GPIO_DT_SPEC_ELEM(n, prop, idx) \
     GPIO_DT_SPEC_GET_BY_IDX(n, prop, idx),
@@ -109,7 +107,6 @@ static int zgm_init(const struct device *dev) {
             {                                                                                      \
                 .port_pin_mask = GPIO_PORT_PIN_MASK_FROM_DT_INST(n),                               \
             },                                                                                     \
-        .ngpios = DT_INST_PROP(n, ngpios),                                                         \
         .en_gpio = GPIO_DT_SPEC_INST_GET(n, en_gpios), \
         .out_gpio = GPIO_DT_SPEC_INST_GET_OR(n, out_gpios, {0}), \
         .sel_gpios = {DT_FOREACH_PROP_ELEM(DT_DRV_INST(n), select_gpios, ZGM_GPIO_DT_SPEC_ELEM)}, \
