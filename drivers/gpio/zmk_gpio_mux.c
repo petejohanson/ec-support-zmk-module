@@ -39,12 +39,16 @@ static int zgm_pin_config(const struct device *dev, gpio_pin_t pin, gpio_flags_t
             gpio_pin_set_dt(&cfg->sel_gpios[i], val);
         }
 
-        ret = gpio_pin_set_dt(&cfg->en_gpio, 1);
+        if (cfg->en_gpio.port) {
+            ret = gpio_pin_set_dt(&cfg->en_gpio, 1);
+        }
     } else {
-        ret = gpio_pin_set_dt(&cfg->en_gpio, 0);
-        if (ret < 0) {
-            LOG_ERR("Failed to disable the en-gpio");
-            return ret;
+        if (cfg->en_gpio.port) {
+            ret = gpio_pin_set_dt(&cfg->en_gpio, 0);
+            if (ret < 0) {
+                LOG_ERR("Failed to disable the en-gpio");
+                return ret;
+            }
         }
         data->active_pin = -1;
     }
@@ -107,7 +111,7 @@ static int zgm_init(const struct device *dev) {
             {                                                                                      \
                 .port_pin_mask = GPIO_PORT_PIN_MASK_FROM_DT_INST(n),                               \
             },                                                                                     \
-        .en_gpio = GPIO_DT_SPEC_INST_GET(n, en_gpios), \
+        .en_gpio = GPIO_DT_SPEC_INST_GET_OR(n, en_gpios, {}), \
         .out_gpio = GPIO_DT_SPEC_INST_GET_OR(n, out_gpios, {0}), \
         .sel_gpios = {DT_FOREACH_PROP_ELEM(DT_DRV_INST(n), select_gpios, ZGM_GPIO_DT_SPEC_ELEM)}, \
         .sel_gpios_len = DT_INST_PROP_LEN(n, select_gpios), \

@@ -18,7 +18,6 @@ properties:
 
   en-gpios:
     type: phandle-array
-    required: true
   
   out-gpios:
     type: phandle-array
