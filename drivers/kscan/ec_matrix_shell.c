@@ -203,7 +203,7 @@ static int cmd_matrix_calibration_load(const struct shell *shell, size_t argc, c
     struct matrix_hdl *matrix = get_matrix(argv[-2]);
     int ret = zmk_kscan_ec_matrix_settings_load_calibration(matrix->dev);
     if (ret < 0) {
-        shell_print(shell, "Failed to initiate save calibration (%d)", ret);
+        shell_print(shell, "Failed to initiate load calibration (%d)", ret);
     }
 
     return ret;
