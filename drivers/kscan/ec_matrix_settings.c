@@ -35,8 +35,8 @@ static int settings_load_cb(const char *key, size_t len, settings_read_cb read_c
     size_t entry_id = strtoul(key, &endptr, 10);
     if (endptr != key) {
         if (entry_id >= state->len) {
-            LOG_WRN("Ignoring calibration for invalid index %d", entry_id);
-            return -EINVAL;
+            LOG_WRN("Ignoring calibration for invalid index %d, skipping", entry_id);
+            return 0;
         }
         ssize_t ret = read_cb(cb_arg, &state->entries[entry_id], len);
         if (ret < 0) {
