@@ -109,7 +109,7 @@ static int zmk_kscan_ec_matrix_settings_init(void) {
     // TODO: Avoid duplicating this from the ZMK call to init?
 
     LOG_ERR("About to initialise settings subsystem");
-    ret = settings_subsys_init();
+    int ret = settings_subsys_init();
 
     if (ret != 0) {
         LOG_ERR("Initialising settings failed with: %s", ret);
