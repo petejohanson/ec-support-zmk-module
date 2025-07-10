@@ -108,11 +108,11 @@ int zmk_kscan_ec_matrix_settings_save_calibration(const struct device *dev) {
 static int zmk_kscan_ec_matrix_settings_init(void) {
     // TODO: Avoid duplicating this from the ZMK call to init?
 
-    snprintf("About to initialise settings subsystem");
+    LOG_ERR("About to initialise settings subsystem");
     ret = settings_subsys_init();
 
     if (ret != 0) {
-        snprintf("Initialising settings failed with: %s", ret);
+        LOG_ERR("Initialising settings failed with: %s", ret);
     }
 
     DT_INST_FOREACH_STATUS_OKAY(LOAD_CALL)
