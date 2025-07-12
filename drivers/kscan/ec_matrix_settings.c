@@ -61,7 +61,7 @@ static void load_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibra
                     size_t len, const void *user_data) {
     struct load_state state = (struct load_state){.entries = entries, .len = len};
     char short_name[SHORT_MATRIX_NAME_LEN] = "";
-    snprint(short_name, SHORT_MATRIX_NAME_LEN, dev->name);
+    snprintf(short_name, SHORT_MATRIX_NAME_LEN, dev->name);
     snprintf(state.setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", short_name);
     LOG_DBG("Loading the subtree directly for %s", state.setting_name);
     settings_load_subtree_direct(state.setting_name, settings_load_cb, &state);
@@ -71,7 +71,7 @@ static void save_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibra
                     size_t len, const void *user_data) {
     char setting_name[MAX_SETTING_LEN];
     char short_name[SHORT_MATRIX_NAME_LEN] = "";
-    snprint(short_name, SHORT_MATRIX_NAME_LEN, dev->name);
+    snprintf(short_name, SHORT_MATRIX_NAME_LEN, dev->name);
 
 #if IS_ENABLED(CONFIG_ZMK_KSCAN_EC_MATRIX_SETTINGS_DISCRETE)
     for (size_t i = 0; i < len; i++) {
