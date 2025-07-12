@@ -13,6 +13,7 @@
 LOG_MODULE_REGISTER(zmk_kscan_ec_matrix_settings);
 
 #define MAX_SETTING_LEN 32
+#define SHORT_MATRIX_NAME_LEN 5
 
 struct load_state {
     char setting_name[MAX_SETTING_LEN];
@@ -59,7 +60,9 @@ static int settings_load_cb(const char *key, size_t len, settings_read_cb read_c
 static void load_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibration_entry *entries,
                     size_t len, const void *user_data) {
     struct load_state state = (struct load_state){.entries = entries, .len = len};
-    snprintf(state.setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", dev->name);
+    char short_name[SHORT_MATRIX_NAME_LEN] = "";
+    snprint(short_name, SHORT_MATRIX_NAME_LEN, dev->name);
+    snprintf(state.setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", short_name);
     LOG_DBG("Loading the subtree directly for %s", state.setting_name);
     settings_load_subtree_direct(state.setting_name, settings_load_cb, &state);
 }
@@ -67,10 +70,12 @@ static void load_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibra
 static void save_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibration_entry *entries,
                     size_t len, const void *user_data) {
     char setting_name[MAX_SETTING_LEN];
+    char short_name[SHORT_MATRIX_NAME_LEN] = "";
+    snprint(short_name, SHORT_MATRIX_NAME_LEN, dev->name);
 
 #if IS_ENABLED(CONFIG_ZMK_KSCAN_EC_MATRIX_SETTINGS_DISCRETE)
     for (size_t i = 0; i < len; i++) {
-        snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s/%d", dev->name, i);
+        snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s/%d", short_name, i);
         int ret = settings_save_one(setting_name, &entries[i],
                                     sizeof(struct zmk_kscan_ec_matrix_calibration_entry));
         if (ret != 0) {
@@ -79,7 +84,7 @@ static void save_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibra
         }
     }
 #else
-    snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", dev->name);
+    snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", short_name);
 
     int ret = settings_save_one(setting_name, entries,
                                 len * sizeof(struct zmk_kscan_ec_matrix_calibration_entry));
