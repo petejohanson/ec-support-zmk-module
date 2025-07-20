@@ -22,6 +22,14 @@ struct load_state {
     size_t len;
 };
 
+static inline char* shorten(char arr[]) {
+    static char buf[SHORT_MATRIX_NAME_LEN];
+    if (buf[0] == '\0') {
+        snprintf(buf, SHORT_MATRIX_NAME_LEN, arr);
+    }
+    return buf;
+}
+
 static int settings_load_cb(const char *key, size_t len, settings_read_cb read_cb, void *cb_arg,
                             void *param) {
     struct load_state *state = (struct load_state *)param;
@@ -64,9 +72,7 @@ static void load_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibra
     int wl = snprintf(state.setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", dev->name);
 #if IS_ENABLED(CONFIG_ZMK_KSCAN_EC_MATRIX_SETTINGS_DISCRETE)
     if (wl >= MAX_SETTING_LEN - DISCRETE_SETTING_SUFFIX_LEN) {
-        char short_name[SHORT_MATRIX_NAME_LEN];
-        snprintf(short_name, SHORT_MATRIX_NAME_LEN, dev->name);
-        snprintf(state.setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", short_name);
+        snprintf(state.setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", shorten(dev->name));
     }
 #endif
     LOG_DBG("Loading the subtree directly for %s", state.setting_name);
@@ -81,9 +87,7 @@ static void save_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibra
     for (size_t i = 0; i < len; i++) {
         int wl = snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s/%d", dev->name, i);
         if (wl >= MAX_SETTING_LEN) {
-            char short_name[SHORT_MATRIX_NAME_LEN];
-            snprintf(short_name, SHORT_MATRIX_NAME_LEN, dev->name);
-            snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s/%d", short_name, i);
+            snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s/%d", shorten(dev->name), i);
         }
         int ret = settings_save_one(setting_name, &entries[i],
                                     sizeof(struct zmk_kscan_ec_matrix_calibration_entry));
@@ -93,7 +97,7 @@ static void save_cb(const struct device *dev, struct zmk_kscan_ec_matrix_calibra
         }
     }
 #else
-    snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", short_name);
+    snprintf(setting_name, MAX_SETTING_LEN, "zmk/ec/calibration/%s", dev->name);
 
     int ret = settings_save_one(setting_name, entries,
                                 len * sizeof(struct zmk_kscan_ec_matrix_calibration_entry));
